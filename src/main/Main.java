@@ -1,7 +1,5 @@
 package main;
 
-import jdk.internal.util.xml.impl.Input;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -29,6 +27,7 @@ public class Main {
 
 	private static long delayTime = 10;
 	private static boolean consolePrinting = false;
+	private static boolean compatibilityMode = false;
 
 	public static void main(String[] args) {
 
@@ -92,7 +91,7 @@ public class Main {
 
 		vertical.setValue(vertical.getMaximum());
 
-		console.append("--- Java console command line interface V1.1 ---\n");
+		console.append("--- Java console command line interface V1.2 ---\n");
 
 
 		while (true) {
@@ -105,9 +104,11 @@ public class Main {
 	private static void runCommand(String command, JTextArea console, Process process) {
 
 		if (command.equalsIgnoreCase("!help")) {
-			inputThread.add("\n !changeDelayTime [long] - Changes the amount of time the program has to read the command response in ms.\n");
-			inputThread.add("\n !enableConsolePrinting - enables mirroring of the GUI into the console.\n");
-			inputThread.add("\n !disableConsolePrinting - disable mirroring of the GUI into the console. (Default)\n");
+			inputThread.add("\n !changeDelayTime [long] - Changes the amount of time the program has to read the command response in ms.");
+			inputThread.add("\n !enableConsolePrinting - enables mirroring of the GUI into the console.");
+			inputThread.add("\n !disableConsolePrinting - disable mirroring of the GUI into the console. (Default)");
+			inputThread.add("\n !enableCompatibilityMode - (!ecm) enables compatibility with systems without access to cmd.exe");
+			inputThread.add("\n !disableCompatibilityMode - (!dcm) disables compatibility with systems without access to cmd.exe (Default)");
 			inputThread.add("\n !exit - Exits the program\n");
 			return;
 		}
@@ -115,7 +116,7 @@ public class Main {
 		if (command.equalsIgnoreCase("!changeDelayTime")) {
 
 			if (command.split(" ").length < 2) {
-				inputThread.add("\nError: Incorrect syntax\n");
+				inputThread.add("\nError: Incorrect syntax");
 				return;
 			}
 
@@ -125,14 +126,26 @@ public class Main {
 		}
 
 		if (command.equalsIgnoreCase("!enableConsolePrinting")) {
-			inputThread.add("\nEnabled console printing\n");
+			inputThread.add("\nEnabled console printing");
 			consolePrinting = true;
 			return;
 		}
 
 		if (command.equalsIgnoreCase("!disableConsolePrinting")) {
-			inputThread.add("\nDisabled console printing\n");
+			inputThread.add("\nDisabled console printing");
 			consolePrinting = false;
+			return;
+		}
+
+		if (command.equalsIgnoreCase("!enableCompatibilityMode") || command.equalsIgnoreCase("!ecm")) {
+			inputThread.add("\nEnabled compatibility mode");
+			compatibilityMode = true;
+			return;
+		}
+
+		if (command.equalsIgnoreCase("!disableCompatibilityMode") || command.equalsIgnoreCase("!dcm")) {
+			inputThread.add("\nDisabled compatibility mode");
+			compatibilityMode = false;
 			return;
 		}
 
@@ -142,6 +155,29 @@ public class Main {
 		}
 
 		try {
+
+			if (compatibilityMode) {
+
+				ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", command);
+				builder.redirectErrorStream(true);
+
+				Process cmd = builder.start();
+
+				BufferedReader reader = new BufferedReader(new InputStreamReader(cmd.getInputStream()));
+
+				console.append("\n\n > " + command);
+
+				String line;
+				while ((line = reader.readLine()) != null) {
+					console.append("\n" + line);
+				}
+
+				reader.close();
+				cmd.destroy();
+
+				return;
+
+			}
 
 			BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(process.getOutputStream()));
 
