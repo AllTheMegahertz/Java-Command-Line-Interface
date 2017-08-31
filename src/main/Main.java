@@ -92,11 +92,12 @@ public class Main {
 
 		vertical.setValue(vertical.getMaximum());
 
-		console.append("--- Java console command line interface V1.0 ---\n");
+		console.append("--- Java console command line interface V1.1 ---\n");
 
 
 		while (true) {
 			vertical.setValue(vertical.getMaximum());
+			read();
 		}
 
 	}
@@ -108,7 +109,6 @@ public class Main {
 			inputThread.add("\n !enableConsolePrinting - enables mirroring of the GUI into the console.\n");
 			inputThread.add("\n !disableConsolePrinting - disable mirroring of the GUI into the console. (Default)\n");
 			inputThread.add("\n !exit - Exits the program\n");
-			read();
 			return;
 		}
 
@@ -116,12 +116,10 @@ public class Main {
 
 			if (command.split(" ").length < 2) {
 				inputThread.add("\nError: Incorrect syntax\n");
-				read();
 				return;
 			}
 
 			delayTime = Long.parseLong(command.split(" ")[1]);
-			read();
 			return;
 
 		}
@@ -129,14 +127,12 @@ public class Main {
 		if (command.equalsIgnoreCase("!enableConsolePrinting")) {
 			inputThread.add("\nEnabled console printing\n");
 			consolePrinting = true;
-			read();
 			return;
 		}
 
 		if (command.equalsIgnoreCase("!disableConsolePrinting")) {
 			inputThread.add("\nDisabled console printing\n");
 			consolePrinting = false;
-			read();
 			return;
 		}
 
@@ -157,20 +153,10 @@ public class Main {
 			e.printStackTrace();
 		}
 
-		read();
 
 	}
 
 	private static synchronized void read() {
-		int size = 0;
-		while (inputThread.getQueue().size() == 0 || inputThread.getQueue().size() != size) {
-			size = inputThread.getQueue().size();
-			try {
-				Thread.sleep(delayTime);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
 
 		String line;
 		while ((line = inputThread.nextLine()) != null) {
@@ -179,6 +165,7 @@ public class Main {
 				System.out.println(line);
 			}
 		}
+
 	}
 
 }
